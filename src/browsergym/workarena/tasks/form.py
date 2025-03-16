@@ -194,6 +194,8 @@ class ServiceNowFormTask(AbstractServiceNowTask):
         """
         page.wait_for_function(
             f"typeof window.{self.js_prefix} !== 'undefined' && window.{self.js_prefix}.WORKARENA_LOAD_COMPLETE",
+            timeout=SNOW_BROWSER_TIMEOUT,
+            polling=1000
         )
 
         # Get the form fields
@@ -297,6 +299,8 @@ class ServiceNowFormTask(AbstractServiceNowTask):
         try:
             page.wait_for_function(
                 f"typeof window.{self.js_prefix} !== 'undefined' && window.{self.js_prefix}.WORKARENA_LOAD_COMPLETE",
+                timeout=SNOW_BROWSER_TIMEOUT,
+                polling=1000
             )
         except:
             page.wait_for_load_state("networkidle")
@@ -305,12 +309,18 @@ class ServiceNowFormTask(AbstractServiceNowTask):
 
         if not iframe_only:
             logging.debug("Waiting for Glide form API to be available")
-            page.wait_for_function(f"window.{self.form_js_selector}")
+            page.wait_for_function(
+                f"window.{self.form_js_selector}",
+                timeout=SNOW_BROWSER_TIMEOUT,
+                polling=1000
+            )
             logging.debug("Detected Glide form API ready")
 
             logging.debug("Waiting for Glide tabs API to be available")
             page.wait_for_function(
-                f"typeof window.{self.js_prefix}.g_tabs2Sections !== 'undefined'"
+                f"typeof window.{self.js_prefix}.g_tabs2Sections !== 'undefined'",
+                timeout=SNOW_BROWSER_TIMEOUT,
+                polling=1000
             )
             logging.debug("Detected Glide tabs API ready")
 
@@ -1106,7 +1116,9 @@ class EditRecordTask(ServiceNowFormTask, CompositionalBuildingBlockTask):
 
             iframe.get_by_text("Open Record").click()
             page.wait_for_function(
-                "typeof window.gsft_main !== 'undefined' && window.gsft_main.WORKARENA_LOAD_COMPLETE"
+                "typeof window.gsft_main !== 'undefined' && window.gsft_main.WORKARENA_LOAD_COMPLETE",
+                timeout=SNOW_BROWSER_TIMEOUT,
+                polling=1000
             )
         page.wait_for_timeout(1000)
         self._fill_fields(page, iframe, self.new_values.keys(), update=True)

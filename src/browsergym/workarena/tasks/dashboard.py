@@ -21,6 +21,7 @@ from ..config import (
     REPORT_RETRIEVAL_VALUE_CONFIG_PATH,
     REPORT_DATE_FILTER,
     REPORT_PATCH_FLAG,
+    SNOW_BROWSER_TIMEOUT,
 )
 from ..instance import SNowInstance
 from .utils.string import share_tri_gram
@@ -229,15 +230,25 @@ class DashboardRetrievalTask(AbstractServiceNowTask, ABC):
         logging.debug(f"Waiting for {self.iframe_id} to be fully loaded")
         page.wait_for_function(
             f"typeof window.{self.iframe_id} !== 'undefined' && window.{self.iframe_id}.WORKARENA_LOAD_COMPLETE",
+            timeout=SNOW_BROWSER_TIMEOUT,
+            polling=1000
         )
         logging.debug(f"Detected {self.iframe_id} ready")
 
         logging.debug("Waiting for Highcharts API to be available")
-        page.wait_for_function(f"window.{self.iframe_id}.Highcharts")
+        page.wait_for_function(
+            f"window.{self.iframe_id}.Highcharts",
+            timeout=SNOW_BROWSER_TIMEOUT,
+            polling=1000
+        )
         logging.debug("Detected Highcharts API ready")
 
         logging.debug("Waiting for all plots to be loaded available")
-        page.wait_for_function(f"window.{self.iframe_id}.WORKARENA_HIGHCHARTS_ALL_LOADED")
+        page.wait_for_function(
+            f"window.{self.iframe_id}.WORKARENA_HIGHCHARTS_ALL_LOADED",
+            timeout=SNOW_BROWSER_TIMEOUT,
+            polling=1000
+        )
         logging.debug("All plots loaded")
 
     def get_init_scripts(self) -> List[str]:
@@ -351,7 +362,9 @@ class DashboardRetrievalTask(AbstractServiceNowTask, ABC):
             search_input.fill(chart_title)
             search_input.press("Enter")
             page.wait_for_function(
-                "typeof window.gsft_main !== 'undefined' && window.gsft_main.WORKARENA_LOAD_COMPLETE"
+                "typeof window.gsft_main !== 'undefined' && window.gsft_main.WORKARENA_LOAD_COMPLETE",
+                timeout=SNOW_BROWSER_TIMEOUT,
+                polling=1000
             )
             # Click on the chart preview to open it
             frame.wait_for_selector(f'a[aria-label="Preview record: {chart_title}"]').click()
@@ -359,7 +372,9 @@ class DashboardRetrievalTask(AbstractServiceNowTask, ABC):
             page.keyboard.press("Enter")
             # Now in the form view, wait for the page to load and click to view the report
             page.wait_for_function(
-                "typeof window.gsft_main !== 'undefined' && window.gsft_main.WORKARENA_LOAD_COMPLETE"
+                "typeof window.gsft_main !== 'undefined' && window.gsft_main.WORKARENA_LOAD_COMPLETE",
+                timeout=SNOW_BROWSER_TIMEOUT,
+                polling=1000
             )
             frame = page.wait_for_selector('iframe[name="gsft_main"]').content_frame()
             frame.get_by_text("View Report").first.click()
